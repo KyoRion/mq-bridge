@@ -1,7 +1,7 @@
 {
     "name": "kyorion/mq-bridge",
     "description": "Internal message verification & subscription support for microservices",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "type": "library",
     "require": {
         "php": "^8.2",

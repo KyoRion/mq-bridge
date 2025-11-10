@@ -1,0 +1,32 @@
+{
+    "name": "kyorion/mq-bridge",
+    "description": "Internal message verification & subscription support for microservices",
+    "version": "1.0.0",
+    "type": "library",
+    "require": {
+        "php": "^8.2",
+        "illuminate/support": "^11.0",
+        "vladimir-yuldashev/laravel-queue-rabbitmq": "^14.0",
+        "firebase/php-jwt": "^6.10"
+    },
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Kyorion\\MqBridge\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Khoahd",
+            "email": "hangkhoa2611@gmail.com"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Kyorion\\MqBridge\\Providers\\MqBridgeServiceProvider"
+            ]
+        }
+    },
+    "minimum-stability": "dev"
+}

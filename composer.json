@@ -28,6 +28,9 @@
             ]
         }
     },
+    "include-path": [
+        "config/"
+    ],
     "minimum-stability": "stable",
     "prefer-stable": true
 }

@@ -1,0 +1,61 @@
+# ===========================================================
+# Laravel / PHP Package .gitignore (mq-bridge)
+# ===========================================================
+
+# Composer
+/vendor/
+composer.lock
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Icon?
+desktop.ini
+
+# IDE files
+/.idea/
+/.vscode/
+/nbproject/
+*.sublime-project
+*.sublime-workspace
+
+# PHPUnit / Testing
+/phpunit.xml
+/phpunit.xml.dist
+/phpunit.result.cache
+/tests/_output/
+/coverage/
+/.clover
+
+# Logs / cache
+/storage/
+*.log
+*.cache
+*.tmp
+*.bak
+*.swp
+
+# Build / distribution
+/build/
+/node_modules/
+/dist/
+/coverage/
+/.env
+.env.*
+
+# Temporary files
+*.zip
+*.tar.gz
+*.rar
+*.bak
+*.tmp
+
+# OS trash
+.Trashes
+*.swp
+*.lock
+*.orig
+
+# Composer vendor for local dev
+/vendor-bin/

@@ -32,6 +32,7 @@ return [
         'demo' => [
             'exchange' => 'demo.exchange',
             'routing_key' => 'demo.key',
+            //'subscriber' => \App\Subscribers\DemoSubscriber::class,
         ]
     ]
 ];

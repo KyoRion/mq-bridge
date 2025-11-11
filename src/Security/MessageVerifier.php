@@ -16,43 +16,19 @@ class MessageVerifier
      */
     public static function verify(array $message): array
     {
-        $expectedSignature = hash_hmac(
+        $provided = $message['signature'] ?? null;
+        unset($message['signature']);
+
+        $expected = hash_hmac(
             'sha256',
-            json_encode([
-                'meta' => $message['meta'],
-                'payload' => $message['payload'],
-                'user' => $message['user'] ?? [],
-            ]),
+            json_encode($message, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
             Config::get('mq_bridge.hmac_secret')
         );
 
-        if (!hash_equals($expectedSignature, $message['signature'] ?? '')) {
-            throw new Exception('Invalid message signature');
+        if ($provided !== $expected) {
+            throw new \RuntimeException('Invalid message signature');
         }
 
-        $user = $message['user'] ?? [];
-        $decodedJwt = null;
-
-        if (!empty($user['jwt'])) {
-            try {
-                $decodedJwt = JWT::decode(
-                    $user['jwt'],
-                    new Key(Config::get('mq_bridge.jwt_secret'), 'HS256')
-                );
-            } catch (ExpiredException $e) {
-                Log::warning('⚠️ Expired JWT accepted (soft verify)', [
-                    'user_id' => $user['id'] ?? null,
-                ]);
-                $decodedJwt = JWT::jsonDecode(
-                    JWT::urlsafeB64Decode(explode('.', $user['jwt'])[1])
-                );
-            }
-        }
-
-        return [
-            'payload' => $message['payload'],
-            'meta' => $message['meta'],
-            'user' => array_merge($user, ['decoded' => (array) $decodedJwt]),
-        ];
+        return $message;
     }
 }

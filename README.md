@@ -42,21 +42,7 @@ return [
         'vhost' => env('MQ_VHOST', '/'),
     ],
     'hmac_secret' => env('MQ_HMAC_SECRET', 'changeme'),
-    'jwt_secret'  => env('MQ_JWT_SECRET', 'changeme'),
-    'services' => [
-        'prescription' => [
-            'exchange' => 'prescription.exchange',
-            'routing_key' => 'prescription.key',
-        ],
-        'billing' => [
-            'exchange' => 'billing.exchange',
-            'routing_key' => 'billing.key',
-        ],
-        'notification' => [
-            'exchange' => 'notification.exchange',
-            'routing_key' => 'notification.key',
-        ],
-    ],
+    'jwt_secret'  => env('MQ_JWT_SECRET', 'changeme')
 ];
 ```
 
@@ -67,11 +53,11 @@ return [
 ```php
 use MqBridge\Publishers\MessagePublisher;
 
-MessagePublisher::publish('billing', 'invoice.created', [
-    'invoice_id' => 123,
-    'amount' => 200000,
-], [
-    'jwt' => 'user-jwt-token'
+MessagePublisher::publish('queue-name', [
+    'type' => 'queue.action',
+    'data' => [
+        'foo' => 'bar'
+    ]
 ]);
 ```
 
@@ -79,17 +65,26 @@ MessagePublisher::publish('billing', 'invoice.created', [
 
 ### 📥 Consuming a Message
 
-```php
-use MqBridge\Subscribers\MessageSubscriber;
+When you need to listen the message queue make a event & listener for handle custom logic by event.
 
-MessageSubscriber::handle($message, function ($payload, $meta, $user) {
-    Log::info('✅ Verified message received', [
-        'event' => $meta['event'],
-        'payload' => $payload,
-        'user' => $user['decoded'] ?? null,
-    ]);
-});
+Create a Event matching by format 'type' when you publish
+``type: queue.action`` => then Event class name will be QueueActionEvent
+
+After that create listener and declared it into the EventServiceProvider
+
+```php
+protected $listen = [
+    QueueActionEvent::class => [
+        // Make any listener for handling your data.
+        CaptureQueueAction::class,
+    ]
+];
 ```
+
+Using command: ``php artisan mq:listen {queues-name}``
+Example: ``php artisan mq:listen queue-name``
+
+You can config with supervisor for auto start listen after that just publish your event then the job automatic caught.
 
 ---
 
@@ -103,14 +98,6 @@ Each message sent through `mq-bridge` is:
 Even if JWTs expire during queue delay, the system supports **soft verification** to ensure data consistency.
 
 ---
-
-### 🧩 Multi-Service Example
-
-```php
-MessagePublisher::publish('prescription', 'created', [...]);
-MessagePublisher::publish('inventory', 'stock.updated', [...]);
-MessagePublisher::publish('notification', 'user.alert', [...]);
-```
 
 Each service’s configuration is defined in config/mq_bridge.php.
 
@@ -167,21 +154,7 @@ return [
         'vhost' => env('MQ_VHOST', '/'),
     ],
     'hmac_secret' => env('MQ_HMAC_SECRET', 'changeme'),
-    'jwt_secret'  => env('MQ_JWT_SECRET', 'changeme'),
-    'services' => [
-        'prescription' => [
-            'exchange' => 'prescription.exchange',
-            'routing_key' => 'prescription.key',
-        ],
-        'billing' => [
-            'exchange' => 'billing.exchange',
-            'routing_key' => 'billing.key',
-        ],
-        'notification' => [
-            'exchange' => 'notification.exchange',
-            'routing_key' => 'notification.key',
-        ],
-    ],
+    'jwt_secret'  => env('MQ_JWT_SECRET', 'changeme')
 ];
 ```
 
@@ -192,11 +165,11 @@ return [
 ```php
 use MqBridge\Publishers\MessagePublisher;
 
-MessagePublisher::publish('billing', 'invoice.created', [
-    'invoice_id' => 123,
-    'amount' => 200000,
-], [
-    'jwt' => 'user-jwt-token'
+MessagePublisher::publish('queue-name', [
+    'type' => 'queue.action',
+    'data' => [
+        'foo' => 'bar'
+    ]
 ]);
 ```
 
@@ -204,17 +177,27 @@ MessagePublisher::publish('billing', 'invoice.created', [
 
 ### 📥 Nhận message
 
-```php
-use MqBridge\Subscribers\MessageSubscriber;
+Khi bạn cần lắng nghe hàng đợi tin nhắn (message queue), hãy tạo Event và Listener để xử lý logic tùy chỉnh thông qua event.
 
-MessageSubscriber::handle($message, function ($payload, $meta, $user) {
-    Log::info('✅ Nhận message thành công và đã xác thực', [
-        'sự kiện' => $meta['event'],
-        'dữ liệu' => $payload,
-        'người dùng' => $user['decoded'] ?? null,
-    ]);
-});
+Tạo một Event khớp với định dạng 'type' mà bạn sử dụng khi publish:
+``type: queue.action`` => Khi đó tên class Event sẽ là QueueActionEvent
+
+Sau đó, tạo Listener và khai báo nó trong EventServiceProvider:
+
+```php
+protected $listen = [
+    QueueActionEvent::class => [
+        // Make any listener for handling your data.
+        CaptureQueueAction::class,
+    ]
+];
 ```
+
+Sử dụng lệnh: ``php artisan mq:listen {queues-name}``
+Ví dụ: ``php artisan mq:listen queue-name``
+
+Bạn có thể cấu hình với Supervisor để tự động khởi động quá trình lắng nghe (auto start listen).
+Sau đó, chỉ cần publish event của bạn, job sẽ tự động được bắt và xử lý.
 
 ---
 
@@ -226,18 +209,6 @@ Mỗi message gửi qua `mq-bridge` đều:
 - Bị từ chối nếu phát hiện thay đổi hoặc không hợp lệ  
 
 Ngay cả khi JWT hết hạn, hệ thống vẫn hỗ trợ **soft verification** để đảm bảo xử lý message không bị mất dữ liệu.
-
----
-
-### 🧩 Ví dụ nhiều service
-
-```php
-MessagePublisher::publish('prescription', 'created', [...]);
-MessagePublisher::publish('inventory', 'stock.updated', [...]);
-MessagePublisher::publish('notification', 'user.alert', [...]);
-```
-
-Mỗi service có thể cấu hình riêng trong config/mq_bridge.php.
 
 ---
 

@@ -3,6 +3,7 @@
 namespace Kyorion\MqBridge\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Kyorion\MqBridge\Console\RabbitMQListen;
 
 class MqBridgeServiceProvider extends ServiceProvider
 {
@@ -11,6 +12,14 @@ class MqBridgeServiceProvider extends ServiceProvider
         $this->publishes([
             __DIR__ . '/../../config/mq_bridge.php' => config_path('mq_bridge.php'),
         ], 'mq-bridge');
+
+        if ($this->app->runningInConsole()) {
+            $this->commands([
+                \Kyorion\MqBridge\Console\ConsumeCommand::class,
+                \Kyorion\MqBridge\Console\MqMakeSubscriberCommand::class,
+                RabbitMQListen::class
+            ]);
+        }
     }
 
     public function register(): void

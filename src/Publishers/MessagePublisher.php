@@ -10,64 +10,40 @@ use PhpAmqpLib\Message\AMQPMessage;
 
 class MessagePublisher
 {
-    public static function publish(string $service, string $event, array $payload, ?array $user = null): void
+    /**
+     * @throws \Exception
+     */
+    protected static function connection(): AMQPStreamConnection
     {
-        $config = Config::get("mq_bridge.services.$service");
+        $host = Config::get('mq_bridge.connection.host');
+        $port = Config::get('mq_bridge.connection.port');
+        $user = Config::get('mq_bridge.connection.user');
+        $password = Config::get('mq_bridge.connection.password');
+        $vhost = Config::get('mq_bridge.connection.vhost', '/');
 
-        if (!$config) {
-            Log::error("MQ Service [$service] not found in config.");
-            return;
-        }
-
-        $exchange = $config['exchange'];
-        $routingKey = $config['routing_key'];
-
-        $meta = [
-            'event' => $event,
-            'origin' => Config::get('app.name'),
-            'timestamp' => Carbon::now()->timestamp,
-        ];
-
-        $message = [
-            'meta' => $meta,
-            'payload' => $payload,
-            'user' => $user,
-        ];
-
-        $message['signature'] = hash_hmac(
-            'sha256',
-            json_encode($message),
-            Config::get('mq_bridge.hmac_secret')
+        return new AMQPStreamConnection(
+            $host,
+            $port,
+            $user,
+            $password,
+            $vhost
         );
+    }
 
-        try {
-            $connection = new AMQPStreamConnection(
-                Config::get('mq_bridge.connection.host'),
-                Config::get('mq_bridge.connection.port'),
-                Config::get('mq_bridge.connection.user'),
-                Config::get('mq_bridge.connection.password'),
-                Config::get('mq_bridge.connection.vhost')
-            );
+    /**
+     * @throws \Exception
+     */
+    public static function publish(string $queue, array $data, string $exchange = ''): void
+    {
+        $connection = self::connection();
+        $channel = $connection->channel();
 
-            $channel = $connection->channel();
-            $channel->exchange_declare($exchange, 'direct', false, true, false);
+        $channel->queue_declare($queue, false, true, false, false);
+        $msg = new AMQPMessage(json_encode($data), ['content_type' => 'application/json', 'delivery_mode' => 2]);
 
-            $msg = new AMQPMessage(json_encode($message));
-            $channel->basic_publish($msg, $exchange, $routingKey);
+        $channel->basic_publish($msg, '', $queue);
 
-            Log::info("📤 Published [$event] to [$service]", [
-                'exchange' => $exchange,
-                'routing_key' => $routingKey,
-            ]);
-
-            $channel->close();
-            $connection->close();
-        } catch (\Throwable $e) {
-            Log::error("❌ MQ Publish failed", [
-                'service' => $service,
-                'event' => $event,
-                'error' => $e->getMessage(),
-            ]);
-        }
+        $channel->close();
+        $connection->close();
     }
 }

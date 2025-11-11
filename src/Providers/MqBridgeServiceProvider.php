@@ -15,8 +15,6 @@ class MqBridgeServiceProvider extends ServiceProvider
 
         if ($this->app->runningInConsole()) {
             $this->commands([
-                \Kyorion\MqBridge\Console\ConsumeCommand::class,
-                \Kyorion\MqBridge\Console\MqMakeSubscriberCommand::class,
                 RabbitMQListen::class
             ]);
         }

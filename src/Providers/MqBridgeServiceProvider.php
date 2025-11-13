@@ -2,7 +2,10 @@
 
 namespace Kyorion\MqBridge\Providers;
 
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\ServiceProvider;
+use Kyorion\MqBridge\Console\MakeConsumer;
+use Kyorion\MqBridge\Console\MqConsume;
 use Kyorion\MqBridge\Console\RabbitMQListen;
 
 class MqBridgeServiceProvider extends ServiceProvider
@@ -15,7 +18,9 @@ class MqBridgeServiceProvider extends ServiceProvider
 
         if ($this->app->runningInConsole()) {
             $this->commands([
-                RabbitMQListen::class
+                RabbitMQListen::class,
+                MakeConsumer::class,
+                MqConsume::class,
             ]);
         }
     }
@@ -26,5 +31,22 @@ class MqBridgeServiceProvider extends ServiceProvider
             __DIR__.'/../../config/mq_bridge.php',
             'mq_bridge'
         );
+
+        $this->loadConsumers();
+    }
+
+    protected function loadConsumers(): void
+    {
+        $consumerPath = app_path('Consumers');
+
+        if (!File::exists($consumerPath)) {
+            return;
+        }
+
+        $phpFiles = File::allFiles($consumerPath);
+
+        foreach ($phpFiles as $file) {
+            require_once $file->getPathname();
+        }
     }
 }

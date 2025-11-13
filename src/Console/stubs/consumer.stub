@@ -1,0 +1,32 @@
+<?php
+
+namespace {{ namespace }};
+
+use Kyorion\MqBridge\Consumers\MessageConsumer;
+
+class {{ class }} extends MessageConsumer
+{
+    public static function exchanges(): array
+    {
+        return [
+            // ['name' => 'exchange.name', 'type' => 'topic'],
+        ];
+    }
+
+    public static function queue(): string
+    {
+        return '';
+    }
+
+    public static function bindings(): array
+    {
+        return [
+            // 'routing.key.*',
+        ];
+    }
+
+    public function handle(array $payload): void
+    {
+        logger()->info('MQ message received:', $payload);
+    }
+}

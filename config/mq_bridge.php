@@ -14,6 +14,22 @@ return [
         'vhost' => env('MQ_VHOST', '/'),
     ],
 
+    'metrics' => [
+        'enabled' => env('MQ_BRIDGE_METRICS_ENABLED', false),
+
+        'path' => env('MQ_BRIDGE_METRICS_PATH', '/metrics'),
+
+        'middleware' => [
+            // 'auth.basic'
+        ],
+    ],
+
+    'heartbeat' => [
+        // TTL cho heartbeat key (giây)
+        'ttl' => env('MQ_BRIDGE_HEARTBEAT_TTL', 60),
+    ],
+
+
     /*
     |--------------------------------------------------------------------------
     | Security

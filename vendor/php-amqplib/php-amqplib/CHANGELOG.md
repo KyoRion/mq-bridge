@@ -1,5 +1,20 @@
 # Changelog
 
+## [v3.7.4](https://github.com/php-amqplib/php-amqplib/tree/v3.7.4) (2025-11-23)
+
+[Full Changelog](https://github.com/php-amqplib/php-amqplib/compare/v3.7.3...v3.7.4)
+
+**Fixed bugs:**
+
+- Zombie processes because of `SIGHeartbeatSender::unregister` [\#1204](https://github.com/php-amqplib/php-amqplib/issues/1204)
+
+**Merged pull requests:**
+
+- Test against php 8.5 [\#1226](https://github.com/php-amqplib/php-amqplib/pull/1226) ([sergiy-petrov](https://github.com/sergiy-petrov))
+- Update MiscHelper.php [\#1224](https://github.com/php-amqplib/php-amqplib/pull/1224) ([textgroove-steven](https://github.com/textgroove-steven))
+- Remove composer:1 tests from CI [\#1223](https://github.com/php-amqplib/php-amqplib/pull/1223) ([TimWolla](https://github.com/TimWolla))
+- Remove unnecessary $ from code blocks in README [\#1209](https://github.com/php-amqplib/php-amqplib/pull/1209) ([eve-at](https://github.com/eve-at))
+
 ## [v3.7.3](https://github.com/php-amqplib/php-amqplib/tree/v3.7.3) (2025-02-18)
 
 [Full Changelog](https://github.com/php-amqplib/php-amqplib/compare/v3.7.2...v3.7.3)
@@ -948,7 +963,7 @@
 - don't throw an exception in an error handler [\#581](https://github.com/php-amqplib/php-amqplib/pull/581) ([deweller](https://github.com/deweller))
 - Cleanup serialized\_properties on property set [\#577](https://github.com/php-amqplib/php-amqplib/pull/577) ([p-golovin](https://github.com/p-golovin))
 - Annotate at @throws \ErrorException at AbstractChannel::wait [\#575](https://github.com/php-amqplib/php-amqplib/pull/575) ([nohponex](https://github.com/nohponex))
-- Structuring tests [\#574](https://github.com/php-amqplib/php-amqplib/pull/574) ([programarivm](https://github.com/programarivm))
+- Structuring tests [\#574](https://github.com/php-amqplib/php-amqplib/pull/574) ([ghost](https://github.com/ghost))
 - Test with php 5.3 and 7.2 [\#569](https://github.com/php-amqplib/php-amqplib/pull/569) ([snapshotpl](https://github.com/snapshotpl))
 - Add extended datatype for bytes [\#568](https://github.com/php-amqplib/php-amqplib/pull/568) ([masell](https://github.com/masell))
 - Fwrite \ErrorException not being thrown to the top function call when doing basic\_publish [\#564](https://github.com/php-amqplib/php-amqplib/pull/564) ([dp-indrak](https://github.com/dp-indrak))

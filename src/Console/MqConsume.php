@@ -27,7 +27,7 @@ class MqConsume extends Command
         $this->info("🟢 Starting consumer: {$class}");
 
         if ($this->option('debug')) {
-            $consumer->setConsoleLogger(fn($msg) => $this->info($msg));
+            $consumer->setConsoleLogger( fn ($msg) => $this->info($msg));
         }
 
         $consumer->listen();

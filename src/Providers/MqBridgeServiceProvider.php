@@ -48,8 +48,9 @@ class MqBridgeServiceProvider extends ServiceProvider
     protected function registerCoreBindings(): void
     {
         // Metrics
-        $this->app->singleton(MetricsExporter::class, PrometheusExporter::class);
-
+        $this->app->bind(MetricsExporter::class, function () {
+            return new PrometheusExporter();
+        });
         // Heartbeat
         $this->app->singleton(HeartbeatManager::class, function ($app) {
             return new HeartbeatManager(

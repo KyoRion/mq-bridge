@@ -29,6 +29,13 @@ return [
         'ttl' => env('MQ_BRIDGE_HEARTBEAT_TTL', 60),
     ],
 
+    'prometheus' => [
+        'storage' => env('MQ_BRIDGE_PROMETHEUS_STORAGE', 'redis'),
+
+        // Redis database riêng cho prometheus
+        'redis_database' => env('MQ_BRIDGE_PROMETHEUS_REDIS_DB', 1),
+    ],
+
 
     /*
     |--------------------------------------------------------------------------

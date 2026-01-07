@@ -6,7 +6,7 @@ use Kyorion\MqBridge\Metadata\ConsumerMetadata;
 use Prometheus\CollectorRegistry;
 use Prometheus\Counter;
 use Prometheus\Gauge;
-use Prometheus\Storage\InMemory;
+use Prometheus\Storage\Redis;
 
 final class PrometheusExporter implements MetricsExporter
 {
@@ -19,10 +19,30 @@ final class PrometheusExporter implements MetricsExporter
 
     public function __construct(?CollectorRegistry $registry = null)
     {
-        $this->registry = $registry
-            ?? new CollectorRegistry(new InMemory());
+        $this->registry = new CollectorRegistry(
+            $this->createStorage()
+        );
 
         $this->registerMetrics();
+    }
+
+    private function createStorage()
+    {
+        $driver = config('mq_bridge.prometheus.storage', 'redis');
+
+        if ($driver !== 'redis') {
+            throw new \RuntimeException(
+                'mq-bridge only supports Redis prometheus storage'
+            );
+        }
+
+        return new Redis([
+            'host'     => config('database.redis.default.host', '127.0.0.1'),
+            'port'     => config('database.redis.default.port', 6379),
+            'password' => config('database.redis.default.password', null),
+            'database' => config('mq_bridge.prometheus.redis_database', 1),
+            'timeout'  => 0.1,
+        ]);
     }
 
     private function registerMetrics(): void

@@ -5,6 +5,7 @@ namespace Kyorion\MqBridge\Consumers;
 use Kyorion\MqBridge\Metadata\ConsumerMetadata;
 use Kyorion\MqBridge\Metrics\MetricsExporter;
 use Kyorion\MqBridge\Runtime\HeartbeatManager;
+use Throwable;
 
 class DefaultLifecycle implements ConsumerLifecycle
 {

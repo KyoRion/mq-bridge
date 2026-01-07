@@ -5,6 +5,8 @@ namespace Kyorion\MqBridge\Console;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
+use Kyorion\MqBridge\Consumers\ConsumerLifecycle;
+use Kyorion\MqBridge\Consumers\DebugConsumerLifecycle;
 use Kyorion\MqBridge\Consumers\MessageConsumer;
 
 class MqConsume extends Command
@@ -38,9 +40,16 @@ class MqConsume extends Command
         $this->info("🟢 Starting consumer: {$class}");
 
         if ($this->option('debug') && method_exists($consumer, 'setConsoleLogger')) {
-            $consumer->setConsoleLogger(
+            $logger = new ConsoleLogger(
                 fn ($msg) => $this->info($msg)
             );
+
+            app()->extend(ConsumerLifecycle::class, function ($lifecycle) use ($logger) {
+                return new DebugConsumerLifecycle(
+                    $lifecycle,
+                    $logger
+                );
+            });
         }
 
         $consumer->start();

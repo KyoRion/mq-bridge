@@ -30,6 +30,10 @@ class MqBridgeServiceProvider extends ServiceProvider
             ]);
         }
 
+        if (config('mq_bridge.metrics.enabled')) {
+            $this->loadRoutesFrom(__DIR__ . '/../Http/routes.php');
+        }
+
         $this->loadMetricsRoutes();
     }
 

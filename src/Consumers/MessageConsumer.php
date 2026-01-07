@@ -2,10 +2,7 @@
 
 namespace Kyorion\MqBridge\Consumers;
 
-use Illuminate\Support\Facades\Config;
 use Kyorion\MqBridge\Runtime\ConsumerRuntime;
-use PhpAmqpLib\Connection\AMQPStreamConnection;
-use PhpAmqpLib\Message\AMQPMessage;
 
 abstract class MessageConsumer
 {

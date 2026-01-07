@@ -8,6 +8,7 @@ use Illuminate\Support\Str;
 use Kyorion\MqBridge\Consumers\ConsumerLifecycle;
 use Kyorion\MqBridge\Consumers\DebugConsumerLifecycle;
 use Kyorion\MqBridge\Consumers\MessageConsumer;
+use Kyorion\MqBridge\Runtime\ConsumerRuntime;
 
 class MqConsume extends Command
 {
@@ -39,20 +40,22 @@ class MqConsume extends Command
 
         $this->info("🟢 Starting consumer: {$class}");
 
+        $lifecycle = app(ConsumerLifecycle::class);
+
         if ($this->option('debug') && method_exists($consumer, 'setConsoleLogger')) {
             $logger = new ConsoleLogger(
-                fn ($msg) => $this->info($msg)
+                fn ($msg) => $this->line($msg) // 👈 dùng line cho long-running
             );
 
-            app()->extend(ConsumerLifecycle::class, function ($lifecycle) use ($logger) {
-                return new DebugConsumerLifecycle(
-                    $lifecycle,
-                    $logger
-                );
-            });
+            $lifecycle = new DebugConsumerLifecycle(
+                $lifecycle,
+                $logger
+            );
         }
 
-        $consumer->start();
+        $runtime = new ConsumerRuntime($lifecycle);
+
+        $runtime->run($consumer);
 
         return self::SUCCESS;
     }

@@ -40,7 +40,7 @@ final class PrometheusExporter implements MetricsExporter
             'host'     => config('database.redis.default.host', '127.0.0.1'),
             'port'     => config('database.redis.default.port', 6379),
             'password' => config('database.redis.default.password', null),
-            'database' => config('mq_bridge.prometheus.redis_database', 1),
+            'database' => (int) config('mq_bridge.prometheus.redis_database', 1),
             'timeout'  => 0.1,
         ]);
     }

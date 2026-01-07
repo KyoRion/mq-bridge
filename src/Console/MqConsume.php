@@ -55,6 +55,14 @@ class MqConsume extends Command
 
         $runtime = new ConsumerRuntime($lifecycle);
 
+        if ($this->option('debug')) {
+            $payloadLogger = new DebugPayloadLogger(
+                fn ($msg) => $this->line($msg)
+            );
+
+            $runtime->enablePayloadDebug($payloadLogger);
+        }
+
         $runtime->run($consumer);
 
         return self::SUCCESS;

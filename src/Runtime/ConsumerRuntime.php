@@ -3,6 +3,7 @@
 namespace Kyorion\MqBridge\Runtime;
 
 use Illuminate\Support\Facades\Config;
+use Kyorion\MqBridge\Console\DebugPayloadLogger;
 use Kyorion\MqBridge\Consumers\ConsumerLifecycle;
 use Kyorion\MqBridge\Consumers\MessageConsumer;
 use Kyorion\MqBridge\Metadata\ConsumerMetadata;
@@ -13,6 +14,8 @@ use Throwable;
 
 final class ConsumerRuntime
 {
+    private ?DebugPayloadLogger $payloadLogger = null;
+
     public function __construct(
         private ConsumerLifecycle $lifecycle
     ) {}
@@ -91,6 +94,10 @@ final class ConsumerRuntime
 
                 $payload = json_decode($msg->body, true);
 
+                if ($this->payloadLogger) {
+                    $this->payloadLogger->log($payload);
+                }
+
                 try {
                     // 🔥 runtime hook BEFORE business
                     $this->lifecycle->onMessage($meta);
@@ -119,5 +126,10 @@ final class ConsumerRuntime
         while ($channel->is_consuming()) {
             $channel->wait();
         }
+    }
+
+    public function enablePayloadDebug(DebugPayloadLogger $logger): void
+    {
+        $this->payloadLogger = $logger;
     }
 }

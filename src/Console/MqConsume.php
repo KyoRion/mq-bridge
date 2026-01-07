@@ -42,7 +42,7 @@ class MqConsume extends Command
 
         $lifecycle = app(ConsumerLifecycle::class);
 
-        if ($this->option('debug') && method_exists($consumer, 'setConsoleLogger')) {
+        if ($this->option('debug')) {
             $logger = new ConsoleLogger(
                 fn ($msg) => $this->line($msg) // 👈 dùng line cho long-running
             );

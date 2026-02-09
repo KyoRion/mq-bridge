@@ -6,6 +6,16 @@ use Kyorion\MqBridge\Consumers\MessageConsumer;
 
 class {{ class }} extends MessageConsumer
 {
+    public static function service(): string
+    {
+        return config('app.name', 'app');
+    }
+
+    public static function name(): string
+    {
+        return '{{ class }}';
+    }
+
     public static function exchanges(): array
     {
         return [

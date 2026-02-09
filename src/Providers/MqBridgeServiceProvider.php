@@ -9,8 +9,10 @@ use Kyorion\MqBridge\Console\MqConsume;
 use Kyorion\MqBridge\Console\RabbitMQListen;
 use Kyorion\MqBridge\Consumers\ConsumerLifecycle;
 use Kyorion\MqBridge\Consumers\DefaultLifecycle;
+use Kyorion\MqBridge\Consumers\MessageConsumer;
 use Kyorion\MqBridge\Metrics\MetricsExporter;
 use Kyorion\MqBridge\Metrics\PrometheusExporter;
+use Kyorion\MqBridge\Registry\ConsumerRegistry;
 use Kyorion\MqBridge\Runtime\ConsumerRuntime;
 use Kyorion\MqBridge\Runtime\HeartbeatManager;
 
@@ -30,11 +32,10 @@ class MqBridgeServiceProvider extends ServiceProvider
             ]);
         }
 
-        if (config('mq_bridge.metrics.enabled')) {
-            $this->loadRoutesFrom(__DIR__ . '/../Http/routes.php');
-        }
-
         $this->loadMetricsRoutes();
+
+        // Auto-discover và register consumers SAU khi boot
+        $this->discoverAndRegisterConsumers();
     }
 
     public function register(): void
@@ -44,9 +45,9 @@ class MqBridgeServiceProvider extends ServiceProvider
             'mq_bridge'
         );
 
-        $this->registerCoreBindings();
+        $this->app->singleton(ConsumerRegistry::class);
 
-        $this->loadConsumers();
+        $this->registerCoreBindings();
     }
 
     protected function registerCoreBindings(): void
@@ -55,6 +56,7 @@ class MqBridgeServiceProvider extends ServiceProvider
         $this->app->bind(MetricsExporter::class, function () {
             return new PrometheusExporter();
         });
+        
         // Heartbeat
         $this->app->singleton(HeartbeatManager::class, function ($app) {
             return new HeartbeatManager(
@@ -69,7 +71,6 @@ class MqBridgeServiceProvider extends ServiceProvider
                 $app->make(HeartbeatManager::class),
             );
         });
-
 
         // Runtime
         $this->app->singleton(ConsumerRuntime::class, function ($app) {
@@ -99,10 +100,10 @@ class MqBridgeServiceProvider extends ServiceProvider
     }
 
     /* =========================
-     |  AUTO LOAD CONSUMERS
+     |  AUTO DISCOVER & REGISTER CONSUMERS
      ========================= */
 
-    protected function loadConsumers(): void
+    protected function discoverAndRegisterConsumers(): void
     {
         $consumerPath = app_path('Consumers');
 
@@ -110,8 +111,43 @@ class MqBridgeServiceProvider extends ServiceProvider
             return;
         }
 
+        $registry = $this->app->make(ConsumerRegistry::class);
+
         foreach (File::allFiles($consumerPath) as $file) {
+            // Require file để class available
             require_once $file->getPathname();
+
+            // Lấy class name từ file
+            $className = $this->getClassNameFromFile($file);
+
+            if ($className && class_exists($className)) {
+                // Kiểm tra có phải MessageConsumer không
+                if (is_subclass_of($className, MessageConsumer::class)) {
+                    $registry->register($className);
+                }
+            }
         }
+    }
+
+    /**
+     * Lấy fully qualified class name từ file PHP
+     */
+    protected function getClassNameFromFile(\SplFileInfo $file): ?string
+    {
+        $contents = file_get_contents($file->getPathname());
+
+        // Extract namespace
+        $namespace = null;
+        if (preg_match('/namespace\s+([^;]+);/', $contents, $matches)) {
+            $namespace = trim($matches[1]);
+        }
+
+        // Extract class name
+        if (preg_match('/class\s+(\w+)/', $contents, $matches)) {
+            $className = trim($matches[1]);
+            return $namespace ? "{$namespace}\\{$className}" : $className;
+        }
+
+        return null;
     }
 }

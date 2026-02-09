@@ -7,7 +7,9 @@ use Prometheus\RenderTextFormat;
 $path = config('mq_bridge.metrics.path', '/metrics');
 $middleware = config('mq_bridge.metrics.middleware', []);
 
-Route::middleware($middleware)->get($path, function (PrometheusExporter $exporter) {
+Route::middleware($middleware)->get($path, function () {
+    $exporter = app(PrometheusExporter::class);
+
     $renderer = new RenderTextFormat();
 
     return response(
